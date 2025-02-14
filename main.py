@@ -54,6 +54,19 @@ def login():
     
     return jsonify({'message': 'Invalid credentials'}), 401
 
+@app.route('/submit-assignment', methods=['POST'])
+def login():
+    data = request.get_json()
+    answers = data.get('answers')
+    for i in answers:
+        new_user = Answers(que_id=que_id, answer=answer)
+        db.session.add(new_user)
+        
+    db.session.commit()
+    
+    
+    return jsonify({'message': 'Answer Saved'}), 200
+
 @app.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
