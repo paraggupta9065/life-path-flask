@@ -73,6 +73,7 @@ def add_memory():
     except Exception as e:
         app.logger.error(f'Error saving memory: {str(e)}')
         return jsonify({'message': 'Internal server error', 'error': str(e)}), 500
+
 @app.route('/memories', methods=['GET'])
 def get_memories():
     verify_jwt_in_request()

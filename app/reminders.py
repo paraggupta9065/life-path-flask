@@ -1,9 +1,13 @@
 from flask import request, jsonify
 from app import app
 from app.models.models import Reminder, db, reminder_schema, reminders_schema
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
+
 
 @app.route('/reminders', methods=['POST'])
 def add_reminder():
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
     data = request.get_json()
     new_reminder = Reminder(
         title=data.get('title'),
@@ -11,7 +15,9 @@ def add_reminder():
         time=data.get('time'),
         date=data.get('date', ''),
         repeat=data.get('repeat', ''),
-        status=data.get('status', False)
+        status=data.get('status', False),
+        user_id=user_id
+        
     )
     db.session.add(new_reminder)
     db.session.commit()
