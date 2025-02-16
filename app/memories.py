@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import uuid
 from flask import request, jsonify, url_for
 from app import UPLOAD_FOLDER, app
 import base64
@@ -17,26 +18,46 @@ def add_memory():
             return jsonify({'message': 'Image data is required!'}), 400
 
         image_data = data['image']
+        mime_type = 'image/jpeg'
+        
+        if ',' in image_data:
+            header, image_data = image_data.split(',', 1)
+            mime_type = header.split(';')[0].split(':')[1]
+        
+        if mime_type not in ['image/jpeg', 'image/png']:
+            return jsonify({'message': 'Unsupported image type. Only JPEG and PNG allowed!'}), 400
 
-        image_bytes = base64.b64decode(image_data)
+        file_ext = 'png' if 'png' in mime_type else 'jpg'
+        
+        try:
+            image_bytes = base64.b64decode(image_data)
+        except Exception as e:
+            return jsonify({'message': 'Invalid base64 encoding', 'error': str(e)}), 400
 
-        filename = f"memory_{user_id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.jpg"
+        filename = f"memory_{user_id}_{uuid.uuid4().hex}.{file_ext}"
         file_path = os.path.join(UPLOAD_FOLDER, filename)
 
-        with open(file_path, 'wb') as img_file:
-            img_file.write(image_bytes)
+        try:
+            with open(file_path, 'wb') as img_file:
+                img_file.write(image_bytes)
+        except IOError as e:
+            return jsonify({'message': 'Failed to save image', 'error': str(e)}), 500
 
         image_url = url_for('uploaded_file', filename=filename, _external=True)
-
+        
         new_memory = Memory(
             user_id=user_id,
             title=data.get('title', ''),
             description=data.get('description', ''),
             image_url=image_url,
-            date=data.get('date', datetime.utcnow().strftime('%Y-%m-%d'))
+            date=data.get('date', '')
         )
-        db.session.add(new_memory)
-        db.session.commit()
+
+        try:
+            db.session.add(new_memory)
+            db.session.commit()
+        except Exception as e:
+            return jsonify({'message': 'Database error', 'error': str(e)}), 500
 
         return jsonify({
             'message': 'Memory saved successfully!',
@@ -50,8 +71,8 @@ def add_memory():
         }), 201
 
     except Exception as e:
-        return jsonify({'message': 'Error processing image', 'error': str(e)}), 500
-
+        app.logger.error(f'Error saving memory: {str(e)}')
+        return jsonify({'message': 'Internal server error', 'error': str(e)}), 500
 @app.route('/memories', methods=['GET'])
 def get_memories():
     verify_jwt_in_request()
