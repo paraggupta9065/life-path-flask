@@ -13,3 +13,4 @@ from app.auth import *
 from app.memories import *
 from app.ai import *
 from app.reminders import *
+from app.familiar import *

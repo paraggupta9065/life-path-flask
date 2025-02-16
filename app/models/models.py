@@ -39,10 +39,12 @@ class Reminder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    time = db.Column(db.String(10), nullable=False)  # Store in HH:MM format
-    date = db.Column(db.String(20), nullable=True)  # Optional: YYYY-MM-DD
-    repeat = db.Column(db.String(50), nullable=True)  # Options: daily, weekly, monthly
-    status = db.Column(db.Boolean, default=False)  # True if completed
+    time = db.Column(db.String(10), nullable=False)
+    date = db.Column(db.String(20), nullable=True)
+    repeat = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
 
 class ReminderSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -53,12 +55,11 @@ reminders_schema = ReminderSchema(many=True)
 
 class FamiliarFace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    patient_id = db.Column(db.Integer, nullable=False)  # Link to patient profile
-    name = db.Column(db.String(100), nullable=False)  # Name of the person
-    relationship = db.Column(db.String(50), nullable=False)  # Example: Father, Friend
-    photo_url = db.Column(db.String(255), nullable=True)  # URL to the stored image
-    voice_note_url = db.Column(db.String(255), nullable=True)  # URL to the stored voice note
-    added_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    name = db.Column(db.String(100), nullable=False)
+    relationship = db.Column(db.String(50), nullable=False)  
+    image_url = db.Column(db.String(255), nullable=True)  
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
 
 class FamiliarFaceSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
