@@ -5,7 +5,7 @@ from app import app
 from google import genai
 
 
-@app.route('/gen_ai', methods=['GET'])
+@app.route('/gen_ai', methods=['POST'])
 def gen_ai():
     data = request.get_json()
     
