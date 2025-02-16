@@ -7,10 +7,11 @@ from google import genai
 
 @app.route('/gen_ai', methods=['GET'])
 def gen_ai():
-
-    client = genai.Client(api_key="AIzaSyCqOx08su_nmPiSZsUQ1ktLSOqmu3NXg6I")
+    data = request.get_json()
+    
+    client = genai.Client(api_key="AIzaSyCYAQMATgLJY0dcTV9wBNKarrGzxFSg_Ek")
     response = client.models.generate_content(
-        model="gemini-2.0-flash", contents="Explain how AI works"
+        model="gemini-2.0-flash", contents=data.get('message', ''),
     )
     
     return jsonify({'message': response.text})
