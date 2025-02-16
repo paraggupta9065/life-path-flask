@@ -1,14 +1,28 @@
-from flask import request, jsonify
-from app import app
+import os
+from flask import request, jsonify, url_for
+from app import UPLOAD_FOLDER, app
 from app.models.models import db, Memory, memory_schema, memories_schema
 
 @app.route('/memories', methods=['POST'])
 def add_memory():
     data = request.get_json()
+    file = request.files['file']
+    
+    if file.filename == '':
+        return "No selected file"
+
+    if not file:
+        return jsonify({'message': 'Image not found!'}), 400
+        
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(file_path)
+        
+    image_url = url_for('static', filename=f'uploads/{file.filename}', _external=True)
+    
     new_memory = Memory(
         title=data.get('title'),
         description=data.get('description', ''),
-        image_url=data.get('image_url', ''),
+        image_url=image_url,
         date=data.get('date')
     )
     db.session.add(new_memory)

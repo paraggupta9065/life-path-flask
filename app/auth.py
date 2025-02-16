@@ -8,6 +8,7 @@ from app.models.models import db, User
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
+
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
