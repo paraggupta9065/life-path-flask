@@ -14,12 +14,16 @@ def signup():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    name = data.get('name')
+    emergency_contact = data.get('emergency_contact')
+    
+    
     
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'User already exists'}), 400
     
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(email=email, password_hash=hashed_password)
+    new_user = User(email=email, password_hash=hashed_password,emergency_contact=emergency_contact,name=name)
     db.session.add(new_user)
     db.session.commit()
     
@@ -36,7 +40,7 @@ def login():
         access_token = create_access_token(identity={'email': email}, expires_delta=datetime.timedelta(hours=1))
         return jsonify({'access_token': access_token}), 200
     
-    return jsonify({'message': 'Invalid credentials'}), 401
+    return jsonify({'message': 'User not found!'}), 401
 
 
 @app.route('/protected', methods=['GET'])

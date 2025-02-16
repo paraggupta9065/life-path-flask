@@ -1,3 +1,4 @@
+import datetime
 from app import app
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -13,6 +14,8 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), unique=False, nullable=False)
+    emergency_contact = db.Column(db.String(120), unique=False, nullable=True)
     password_hash = db.Column(db.String(200), nullable=False)
     
     
@@ -47,8 +50,22 @@ class ReminderSchema(ma.SQLAlchemyAutoSchema):
 reminder_schema = ReminderSchema()
 reminders_schema = ReminderSchema(many=True)
 
+class FamiliarFace(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, nullable=False)  # Link to patient profile
+    name = db.Column(db.String(100), nullable=False)  # Name of the person
+    relationship = db.Column(db.String(50), nullable=False)  # Example: Father, Friend
+    photo_url = db.Column(db.String(255), nullable=True)  # URL to the stored image
+    voice_note_url = db.Column(db.String(255), nullable=True)  # URL to the stored voice note
+    added_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+class FamiliarFaceSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = FamiliarFace
+
+face_schema = FamiliarFaceSchema()
+faces_schema = FamiliarFaceSchema(many=True)
+
 
 with app.app_context():
     db.create_all()
-    
-    

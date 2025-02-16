@@ -10,3 +10,4 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 from app.main import *
 from app.auth import *
 from app.memories import *
+from app.ai import *

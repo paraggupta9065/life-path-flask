@@ -1,33 +1,42 @@
+from datetime import datetime
 import os
 from flask import request, jsonify, url_for
 from app import UPLOAD_FOLDER, app
+import base64
 from app.models.models import db, Memory, memory_schema, memories_schema
 
 @app.route('/memories', methods=['POST'])
 def add_memory():
     data = request.get_json()
-    file = request.files['file']
-    
-    if file.filename == '':
-        return "No selected file"
 
-    if not file:
-        return jsonify({'message': 'Image not found!'}), 400
-        
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
-        
-    image_url = url_for('static', filename=f'uploads/{file.filename}', _external=True)
-    
-    new_memory = Memory(
-        title=data.get('title'),
-        description=data.get('description', ''),
-        image_url=image_url,
-        date=data.get('date')
-    )
-    db.session.add(new_memory)
-    db.session.commit()
-    return memory_schema.jsonify(new_memory), 201
+    if not data or 'image' not in data:
+        return jsonify({'message': 'Image data is required!'}), 400
+
+    try:
+        image_data = data['image']
+        image_bytes = base64.b64decode(image_data)
+
+        filename = f"memory_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.jpg"
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+        with open(file_path, 'wb') as img_file:
+            img_file.write(image_bytes)
+
+        image_url = url_for('static', filename=f'uploads/{filename}', _external=True)
+
+        new_memory = Memory(
+            title=data.get('title'),
+            description=data.get('description', ''),
+            image_url=image_url,
+            date=data.get('date')
+        )
+        db.session.add(new_memory)
+        db.session.commit()
+
+        return memory_schema.jsonify(new_memory), 201
+
+    except Exception as e:
+        return jsonify({'message': 'Error processing image', 'error': str(e)}), 500
 
 @app.route('/memories', methods=['GET'])
 def get_memories():
