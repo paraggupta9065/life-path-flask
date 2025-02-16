@@ -6,8 +6,6 @@ from app import app
 from app.models.models import db, User
 
 bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
-
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -16,8 +14,6 @@ def signup():
     password = data.get('password')
     name = data.get('name')
     emergency_contact = data.get('emergency_contact')
-    
-    
     
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'User already exists'}), 400
@@ -37,7 +33,7 @@ def login():
     
     user = User.query.filter_by(email=email).first()
     if user and bcrypt.check_password_hash(user.password_hash, password):
-        access_token = create_access_token(identity={'email': email}, expires_delta=datetime.timedelta(hours=1))
+        access_token = create_access_token(identity=str(user.id))
         return jsonify({'access_token': access_token}), 200
     
     return jsonify({'message': 'User not found!'}), 401

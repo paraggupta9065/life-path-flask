@@ -4,10 +4,14 @@ from flask import request, jsonify, url_for
 from app import UPLOAD_FOLDER, app
 import base64
 from app.models.models import db, Memory, memory_schema, memories_schema
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 
 @app.route('/memories', methods=['POST'])
 def add_memory():
+    headers = dict(request.headers)
+    verify_jwt_in_request()
     data = request.get_json()
+    user_id = get_jwt_identity()
 
     if not data or 'image' not in data:
         return jsonify({'message': 'Image data is required!'}), 400
@@ -25,6 +29,7 @@ def add_memory():
         image_url = url_for('static', filename=f'uploads/{filename}', _external=True)
 
         new_memory = Memory(
+            user_id=user_id,
             title=data.get('title'),
             description=data.get('description', ''),
             image_url=image_url,
@@ -40,8 +45,12 @@ def add_memory():
 
 @app.route('/memories', methods=['GET'])
 def get_memories():
-    all_memories = Memory.query.all()
-    return memories_schema.jsonify(all_memories)
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
+    
+    user_memories = Memory.query.filter_by(user_id=user_id).all()
+    
+    return memories_schema.jsonify(user_memories)
 
 @app.route('/memories/<int:id>', methods=['GET'])
 def get_memory(id):

@@ -23,8 +23,9 @@ class Memory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    image_url = db.Column(db.String(500), nullable=True)  # Optional
-    date = db.Column(db.String(20), nullable=False)  # Store in YYYY-MM-DD format
+    image_url = db.Column(db.String(500), nullable=True)
+    date = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class MemorySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
