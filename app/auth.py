@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt_identity, verify_jwt_in_request # type: ignore
 import datetime
 from app import app
 from app.models.models import db, User
@@ -37,6 +38,18 @@ def login():
         return jsonify({'access_token': access_token}), 200
     
     return jsonify({'message': 'User not found!'}), 401
+
+@app.route('/profile', methods=['GET'])
+def get_profile():
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
+    print(user_id)
+    user = User.query.get(user_id)
+    return jsonify({
+            "name": user.name,
+            "email": user.email,
+            "emergency_contact": user.emergency_contact,
+        }), 200
 
 
 @app.route('/protected', methods=['GET'])
