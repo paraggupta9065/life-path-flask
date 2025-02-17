@@ -10,11 +10,9 @@ def gen_ai():
     verify_jwt_in_request()
     user_id = get_jwt_identity()
     
-    # Get the message from the request
     data = request.get_json()
     user_message = data.get("message", "")
 
-    # Fetch user-specific data from the database
     user = User.query.get(user_id)
     reminders = Reminder.query.filter_by(user_id=user_id).all()
     memories = Memory.query.filter_by(user_id=user_id).all()
@@ -74,11 +72,47 @@ def gen_ai():
         str(context)   
     ]
 
-    # Generate a response using the AI model
     response = client.models.generate_content(
         model="gemini-2.0-flash",
-        contents=input_contents  # Pass the input as a list
+        contents=input_contents
     )
 
-    # Return the AI response
     return jsonify({"message": response.text})
+
+
+@app.route("/generate_report", methods=["GET"])
+def generate_report():
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
+
+    answers = Answer.query.filter_by(user_id=user_id).all()
+
+    if not answers:
+        return jsonify({"error": "No answers found for this user"}), 404
+
+    report = {
+        "user_id": user_id,
+        "total_answers": len(answers),
+        "correct_answers": sum(1 for answer in answers if answer.scored == 1),
+        "incorrect_answers": sum(1 for answer in answers if answer.scored == 0),
+        "answers": [
+            {
+                "id": answer.id,
+                "question": answer.question,
+                "answer_text": answer.answer_text,
+                "scored": bool(answer.scored),
+                "created_at": answer.created_at.isoformat()
+            }
+            for answer in answers
+        ],
+        "summary": {
+            "accuracy": f"{(sum(1 for answer in answers if answer.scored == 1) / len(answers)) * 100:.2f}%",
+            "most_common_question": max(
+                set(answer.question for answer in answers),
+                key=lambda q: sum(1 for answer in answers if answer.question == q)
+            ),
+            "last_answer_date": max(answer.created_at for answer in answers).isoformat()
+        }
+    }
+
+    return jsonify(report)

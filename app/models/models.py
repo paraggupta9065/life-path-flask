@@ -67,24 +67,20 @@ class FamiliarFaceSchema(ma.SQLAlchemyAutoSchema):
 
 face_schema = FamiliarFaceSchema()
 faces_schema = FamiliarFaceSchema(many=True)
-
+ 
 
 class Answer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, )
     answer_text = db.Column(db.Text, nullable=True)
     question = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_url = db.Column(db.String(500), nullable=True)
-    scored = db.Column(db.Integer, primary_key=True)
+    scored = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    def __repr__(self):
-        return f"<Answer {self.id} for Question {self.question_id}>"
-
 class AnswerSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Answer
-        load_instance = True
 
 answer_schema = AnswerSchema()
 answers_schema = AnswerSchema(many=True)
