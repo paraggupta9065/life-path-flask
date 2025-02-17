@@ -14,3 +14,4 @@ from app.memories import *
 from app.ai import *
 from app.reminders import *
 from app.familiar import *
+from app.assessment import *
