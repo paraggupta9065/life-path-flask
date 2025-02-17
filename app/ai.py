@@ -2,8 +2,9 @@ from app.models.models import User, Memory, Reminder, FamiliarFace, Answer
 from flask import request, jsonify
 from app import app, db
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
-import datetime
 from google import genai
+import datetime
+
 
 @app.route("/gen_ai", methods=["POST"])
 def gen_ai():
@@ -18,8 +19,9 @@ def gen_ai():
     memories = Memory.query.filter_by(user_id=user_id).all()
     familiar_faces = FamiliarFace.query.filter_by(user_id=user_id).all()
     answers = Answer.query.filter_by(user_id=user_id).all()
-
+    current_time = datetime.datetime.now()
     context = {
+        "current_time": current_time,
         "purpose":"we want answer to given question in very few lines probably 3-4 lines no more and there will be no mention of context and any technical jargons direct text output for dementia patients",
         "user_id": user.id,
         "user_info": {
