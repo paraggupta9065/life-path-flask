@@ -52,7 +52,9 @@ def add_familiar_face():
 
 @app.route('/faces', methods=['GET'])
 def get_familiar_faces():
-    all_faces = FamiliarFace.query.all()
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
+    all_faces = FamiliarFace.query.filter_by(user_id=user_id).all()
     return faces_schema.jsonify(all_faces)
 
 @app.route('/faces/<int:id>', methods=['GET'])

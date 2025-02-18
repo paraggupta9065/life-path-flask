@@ -25,7 +25,9 @@ def add_reminder():
 
 @app.route('/reminders', methods=['GET'])
 def get_reminders():
-    all_reminders = Reminder.query.all()
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
+    all_reminders = Reminder.query.filter_by(user_id=user_id).all()
     return reminders_schema.jsonify(all_reminders)
 
 @app.route('/reminders/<int:id>', methods=['GET'])
